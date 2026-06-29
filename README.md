@@ -1,20 +1,15 @@
 # chromium_parser
 
-Native **C++17 forensic library** for Chrome / Chromium / Brave profiles — history,
-cookies, cache, extensions, autofill, downloads, synced devices, and more.
+Native **C++17 forensic library** for Chrome / Chromium / Brave profiles — history, cookies, cache, extensions, autofill, downloads, synced devices, and more.
 
-It is a **library first**: the parsing logic lives in `chromium_parser`, and the
-programs under [`examples/`](examples/) are thin drivers you can read, copy, and adapt.
+It is a **library first**: the parsing logic lives in `chromium_parser`, and the programs under [`examples/`](examples/) are thin drivers you can read, copy, and adapt.
 
 ---
 
 ## Scope
 Today `chromium_parser` reads the **plaintext** portions of a profile. It does not decrypt protected values. 
 
-Decryption of OS-protected blobs (Windows DPAPI / App-Bound) is on the
-[roadmap](#roadmap) for authorized analysis of profiles you control. The tool is
-intended for **lawful forensic and incident-response work on systems and data you are
-authorized to examine**.
+Decryption of OS-protected blobs (Windows DPAPI / App-Bound) is on the [roadmap](#roadmap) for authorized analysis of profiles you control. The tool is intended for **lawful forensic and incident-response work onsystems and data you are authorized to examine**. YADADA you don't even care.
 
 ---
 
