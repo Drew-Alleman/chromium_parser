@@ -14,7 +14,7 @@ Decryption of OS-protected blobs (Windows DPAPI / App-Bound) is on the [roadmap]
 ---
 
 ## Features
-
+- **Browser & profile discovery** — automatically locate Chromium-family profiles (Chrome, Edge, Brave, and more) on the live machine, or across every user in a mounted disk image.
 - **Identity & account** — profile key/name, signed-in Google account, gaia id, hosted (Workspace) domain, supervised/managed flags, ephemeral status.
 - **History** — URLs, titles, visit and typed counts, last-visit times.
 - **Bookmarks** — the full bookmark tree.
