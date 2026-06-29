@@ -1,5 +1,6 @@
 # chromium_parser
-
+ Native C++17/20 forensic library for Chrome/Chromium profiles: history, cookies, cache, extensions, autofill, and more. 
+ 
 ## Features
 - Identity & account — profile key/name, signed-in Google account, gaia id, hosted
 - (Workspace) domain, supervised/managed flags, ephemeral status.
