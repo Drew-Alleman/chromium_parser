@@ -1,3 +1,15 @@
+/*
+
+!/.gitignore
+!/CMakeLists.txt
+!/CMakePresets.json
+!/LICENSE
+!/vcpkg.json
+!/src/
+!/include/
+!/examples/
+!/third_party/
+
 # Prerequisites
 *.d
 
@@ -67,3 +79,8 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Custom
+.vs/
+out/
+*.csv

@@ -1,0 +1,17 @@
+{
+  "name": "chromium-parser",
+  "version": "0.1.0",
+  "description": "Native C++17 forensic reader for Chrome/Chromium profiles: history, cookies, cache, extensions, autofill, downloads, and synced devices. Plaintext artifacts only.",
+  "dependencies": [
+    "sqlite3",
+    "nlohmann-json",
+    "zlib",
+    "brotli",
+    "protobuf",
+    "snappy",
+    {
+      "name": "leveldb",
+      "features": [ "snappy" ]
+    }
+  ]
+}
