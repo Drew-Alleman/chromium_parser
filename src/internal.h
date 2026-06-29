@@ -10,9 +10,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 #include <cstdint>
 #include <filesystem>
 #include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -25,6 +27,17 @@ namespace chromiumprofile {
         std::transform(s.begin(), s.end(), s.begin(),
             [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
         return s;
+    }
+
+    // Chrome/WebKit timestamps are microseconds since 1601-01-01 (base::Time internal
+    // value). Convert to a Timestamp; returns nullopt for non-positive or pre-Unix
+    // values (Chrome stores 0 / imported defaults that map to ~1601). Single source
+    // of truth for every reader that decodes a Chrome time column.
+    inline std::optional<Timestamp> FromChromeMicros(long long micros1601) {
+        if (micros1601 <= 0) return std::nullopt;
+        long long unixMs = micros1601 / 1000 - 11644473600000LL;
+        if (unixMs < 0) return std::nullopt;
+        return Timestamp(std::chrono::milliseconds(unixMs));
     }
 
     // Thin non-owning diagnostic context threaded through all readers.

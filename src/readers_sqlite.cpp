@@ -21,6 +21,9 @@ namespace fs = std::filesystem;
 namespace chromiumprofile {
     namespace {
 
+        // Column-text helper, declared up front so every query below can use it.
+        static std::string ColText(sqlite3_stmt* stmt, int col);
+
         // Copy a SQLite db plus its -wal/-shm sidecars into dst. Returns the copied
         // db path (dst/<name>), or {} if the main file could not be copied. This is
         // the copyStore callback handed to ReadLockedStore by both readers below.
@@ -87,20 +90,13 @@ namespace chromiumprofile {
                 "SELECT origin_url, username_value, signon_realm, times_used, "
                 "       date_last_used, date_created "
                 "FROM logins WHERE username_value <> '' ORDER BY origin_url;";
-            auto micros = [&](int col) -> std::optional<Timestamp> {
-                long long m = sqlite3_column_int64(stmt, col);
-                if (m <= 0) return std::nullopt;
-                return Timestamp(std::chrono::milliseconds(m / 1000 - 11644473600000LL));
-                };
+            auto micros = [&](int col) { return FromChromeMicros(sqlite3_column_int64(stmt, col)); };
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
                 while (sqlite3_step(stmt) == SQLITE_ROW) {
-                    const unsigned char* u = sqlite3_column_text(stmt, 0);
-                    const unsigned char* n = sqlite3_column_text(stmt, 1);
-                    const unsigned char* r = sqlite3_column_text(stmt, 2);
                     SavedLogin s;
-                    s.url = u ? reinterpret_cast<const char*>(u) : "";
-                    s.username = n ? reinterpret_cast<const char*>(n) : "";
-                    s.signonRealm = r ? reinterpret_cast<const char*>(r) : "";
+                    s.url = ColText(stmt, 0);
+                    s.username = ColText(stmt, 1);
+                    s.signonRealm = ColText(stmt, 2);
                     s.timesUsed = sqlite3_column_int(stmt, 3);
                     s.dateLastUsed = micros(4);
                     s.dateCreated = micros(5);
@@ -126,16 +122,11 @@ namespace chromiumprofile {
                 sqlite3_bind_int(stmt, 1, limit > 0 ? limit : -1);   // 0 -> -1 (unlimited)
                 while (sqlite3_step(stmt) == SQLITE_ROW) {
                     HistoryEntry h;
-                    const unsigned char* u = sqlite3_column_text(stmt, 0);
-                    const unsigned char* t = sqlite3_column_text(stmt, 1);
-                    h.url = u ? reinterpret_cast<const char*>(u) : "";
-                    h.title = t ? reinterpret_cast<const char*>(t) : "";
+                    h.url = ColText(stmt, 0);
+                    h.title = ColText(stmt, 1);
                     h.visitCount = sqlite3_column_int(stmt, 2);
                     h.typedCount = sqlite3_column_int(stmt, 3);
-                    long long micros1601 = sqlite3_column_int64(stmt, 4);
-                    if (micros1601 > 0)
-                        h.lastVisit = Timestamp(std::chrono::milliseconds(
-                            micros1601 / 1000 - 11644473600000LL));
+                    h.lastVisit = FromChromeMicros(sqlite3_column_int64(stmt, 4));
                     hist.entries.push_back(std::move(h));
                 }
                 sqlite3_finalize(stmt);
@@ -158,9 +149,8 @@ namespace chromiumprofile {
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_int(stmt, 1, limit > 0 ? limit : -1);
                 while (sqlite3_step(stmt) == SQLITE_ROW) {
-                    const unsigned char* h = sqlite3_column_text(stmt, 0);
                     CookieDomain c;
-                    c.host = h ? reinterpret_cast<const char*>(h) : "";
+                    c.host = ColText(stmt, 0);
                     c.cookieCount = sqlite3_column_int(stmt, 1);
                     c.secureCount = sqlite3_column_int(stmt, 2);
                     c.httpOnlyCount = sqlite3_column_int(stmt, 3);
@@ -188,10 +178,7 @@ namespace chromiumprofile {
                 "FROM downloads d ORDER BY d.start_time DESC LIMIT ?;";
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_int(stmt, 1, limit > 0 ? limit : -1);
-                auto txt = [&](int col) -> std::string {
-                    const unsigned char* v = sqlite3_column_text(stmt, col);
-                    return v ? reinterpret_cast<const char*>(v) : "";
-                    };
+                auto txt = [&](int col) { return ColText(stmt, col); };
                 while (sqlite3_step(stmt) == SQLITE_ROW) {
                     DownloadEntry d;
                     d.targetPath = txt(0);
@@ -204,10 +191,7 @@ namespace chromiumprofile {
                     d.byExtId = txt(7);
                     d.byExtName = txt(8);
                     d.opened = sqlite3_column_int(stmt, 9) != 0;
-                    long long micros1601 = sqlite3_column_int64(stmt, 10);
-                    if (micros1601 > 0)
-                        d.startTime = Timestamp(std::chrono::milliseconds(
-                            micros1601 / 1000 - 11644473600000LL));
+                    d.startTime = FromChromeMicros(sqlite3_column_int64(stmt, 10));
                     d.sourceUrl = txt(11);
                     out.push_back(std::move(d));
                 }
@@ -431,10 +415,8 @@ namespace chromiumprofile {
                 sqlite3_bind_int(stmt, 1, limit > 0 ? limit : -1);
                 while (sqlite3_step(stmt) == SQLITE_ROW) {
                     TopSite s;
-                    const unsigned char* u = sqlite3_column_text(stmt, 0);
-                    const unsigned char* t = sqlite3_column_text(stmt, 1);
-                    s.url = u ? reinterpret_cast<const char*>(u) : "";
-                    s.title = t ? reinterpret_cast<const char*>(t) : "";
+                    s.url = ColText(stmt, 0);
+                    s.title = ColText(stmt, 1);
                     s.rank = sqlite3_column_int(stmt, 2);
                     out.push_back(std::move(s));
                 }

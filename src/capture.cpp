@@ -225,12 +225,9 @@ namespace chromiumprofile {
                     return std::nullopt;
                 try {
                     long long micros = std::stoll(node["date_added"].get<std::string>());
-                    long long unix_ms = micros / 1000 - 11644473600000LL;
-                    // date_added=0 (default/imported bookmarks) produces a pre-1970
-                    // timestamp (~year 1601). Treat as absent rather than storing
-                    // a bogus date that crashes localtime on Windows.
-                    if (unix_ms < 0) return std::nullopt;
-                    return Timestamp(std::chrono::milliseconds(unix_ms));
+                    // date_added=0 (default/imported) maps to ~1601; the shared
+                    // converter returns nullopt for those pre-1970 values.
+                    return FromChromeMicros(micros);
                 }
                 catch (...) { return std::nullopt; }
                 };

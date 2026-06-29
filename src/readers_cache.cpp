@@ -241,13 +241,8 @@ namespace chromiumprofile {
         // ---- stream-0 (HttpResponseInfo) parser ------------------------------------
 
         static std::optional<Timestamp> ChromeTime(int64_t v) {
-            if (v <= 0) return std::nullopt;
-            // base::Time::ToInternalValue() = microseconds since 1601-01-01.
-            // Subtract the 1601→1970 gap; guard against pre-Unix-epoch results
-            // (e.g. default/zero timestamps) that crash localtime on Windows.
-            long long unix_ms = v / 1000 - 11644473600000LL;
-            if (unix_ms < 0) return std::nullopt;
-            return Timestamp(std::chrono::milliseconds(unix_ms));
+            // Delegates to the shared converter (internal.h) so the epoch math lives once.
+            return FromChromeMicros(v);
         }
 
         // Parse the pickled HttpResponseInfo from stream 0.
