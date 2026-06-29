@@ -1,6 +1,6 @@
 # chromium_parser
 
-Native **C++17 forensic library** for Chrome / Chromium / Brave profiles — history, cookies, cache, extensions, autofill, downloads, synced devices, and more.
+Native C++17 forensic library for Chrome / Chromium / Brave profiles — history, cookies, cache, extensions, autofill, downloads, synced devices, and more. It reads the on-disk artifacts Chromium leaves behind across several formats: SQLite databases, LevelDB key-value stores, Protocol Buffer structures, and the compressed blockfile HTTP cache.
 
 It is a **library first**: the parsing logic lives in `chromium_parser`, and the programs under [`examples/`](examples/) are thin drivers you can read, copy, and adapt.
 
