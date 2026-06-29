@@ -14,7 +14,7 @@ Decryption of OS-protected blobs (Windows DPAPI / App-Bound) is on the [roadmap]
 ---
 
 ## Features
-
+- **Browser & profile discovery** — automatically locate Chromium-family profiles (Chrome, Edge, Brave, and more) on the live machine, or across every user in a mounted disk image.
 - **Identity & account** — profile key/name, signed-in Google account, gaia id, hosted (Workspace) domain, supervised/managed flags, ephemeral status.
 - **History** — URLs, titles, visit and typed counts, last-visit times.
 - **Bookmarks** — the full bookmark tree.
@@ -288,6 +288,82 @@ int main(int argc, char** argv) {
 ```
 PS C:\Users\jdoe\chromium_parser> 02_limits.exe "C:\Users\jdoe\AppData\Local\Google\Chrome\User Data"
 profile [Default]  135 history rows, 1 downloads
+```
+
+### Discovering Profiles
+Auto-discover Chromium-family browser profiles instead of passing a path by hand. With no argument it scans the live machine for the current user; pass a path to treat it as a mounted image / acquired tree and enumerate every user under it. Each install that's found is then captured and summarized — discovery only locates profiles, so CaptureInstallation does the actual parsing.
+```C++
+// 11_discover.cpp   [moderate]
+
+#include <chromium_parser/discover.h>
+#include <chromium_parser/profile.h>
+
+#include <filesystem>
+#include <iostream>
+#include <vector>
+
+int main(int argc, char** argv) {
+    using namespace chromiumprofile;
+
+    // No arg -> live machine, current user. One arg -> a mounted image / acquired root.
+    std::filesystem::path root;
+    if (argc >= 2) root = argv[1];
+
+    std::vector<BrowserInstall> installs = DiscoverInstalls(root);
+
+    if (installs.empty()) {
+        std::cout << "No Chromium-family profiles found"
+            << (root.empty() ? " on this machine.\n" : " under that path.\n");
+        return 0;
+    }
+
+    std::cout << "Found " << installs.size() << " browser install(s):\n\n";
+    for (const auto& in : installs) {
+        std::cout << "== " << in.browser;
+        if (!in.user.empty()) std::cout << "  (user: " << in.user << ")";
+        std::cout << " ==\n   " << in.userDataDir.string() << "\n";
+
+        // Hand the discovered path straight to CaptureInstallation. Wrapped in try/catch
+        // because an unusual layout (e.g. Opera) may not parse cleanly.
+        try {
+            Installation inst = CaptureInstallation(in.userDataDir);
+            std::cout << "   " << inst.profiles().size() << " profile(s)";
+            if (!inst.chromeVersion().empty())
+                std::cout << ", version " << inst.chromeVersion();
+            std::cout << "\n";
+            for (const auto& p : inst.profiles())
+                std::cout << "     - [" << p.identity().key << "] "
+                << (p.identity().name.empty() ? "(unnamed)" : p.identity().name)
+                << (p.isSignedIn() ? "  (signed in)" : "") << "\n";
+        }
+        catch (const std::exception& e) {
+            std::cout << "   (capture failed: " << e.what() << ")\n";
+        }
+        std::cout << "\n";
+    }
+    return 0;
+}
+```
+
+Output:
+```
+PS C:\Users\drew\chromium_parser> 07_discovery.exe
+Found 3 browser install(s):
+
+== Google Chrome  (user: drew) ==
+   C:\Users\drew\AppData\Local\Google\Chrome\User Data
+   1 profile(s), version 149.0.7827.199
+     - [Default] Your Chrome  (signed in)
+
+== Microsoft Edge  (user: drew) ==
+   C:\Users\drew\AppData\Local\Microsoft\Edge\User Data
+   1 profile(s), version 149.0.4022.98
+     - [Default] Profile 1  (signed in)
+
+== Brave  (user: drew) ==
+   C:\Users\drew\AppData\Local\BraveSoftware\Brave-Browser\User Data
+   1 profile(s), version 149.1.91.175
+     - [Default] Personal
 ```
 
 ### More examples
