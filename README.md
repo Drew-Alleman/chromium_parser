@@ -9,7 +9,7 @@ It is a **library first**: the parsing logic lives in `chromium_parser`, and the
 ## Scope
 Today `chromium_parser` reads the **plaintext** portions of a profile. It does not decrypt protected values. 
 
-Decryption of OS-protected blobs (Windows DPAPI / App-Bound) is on the [roadmap](#roadmap) for authorized analysis of profiles you control. The tool is intended for **lawful forensic and incident-response work on systems and data you are authorized to examine**. YADADA you don't even care.
+Decryption of OS-protected blobs (Windows DPAPI / App-Bound) is on the [roadmap](#roadmap) for authorized analysis of profiles you control. The tool is intended for **lawful forensic and incident-response work on systems and data you are authorized to examine**.
 
 ---
 
