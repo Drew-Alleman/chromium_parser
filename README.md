@@ -363,7 +363,7 @@ Installation
 
 ## License
 
-`chromium_parser` is released under the terms in the [`LICENSE`](LICENSE) file.
+`chromium_parser` is released under the terms of [`GPL-3.0`](LICENSE).
 
 ## Disclaimer
 
