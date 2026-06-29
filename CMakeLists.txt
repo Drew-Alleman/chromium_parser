@@ -28,7 +28,7 @@ add_library(chromium_parser STATIC
     "${CMAKE_CURRENT_SOURCE_DIR}/src/readers_cache.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/src/readers_proto.cpp"
     ${CHROME_PROTO_SOURCES}
-)
+ "include/chromium_parser/discover.h" "src/discover.cpp")
 
 # PUBLIC: every example that links the library inherits these include dirs + libs.
 target_include_directories(chromium_parser PUBLIC
@@ -49,6 +49,6 @@ file(GLOB EXAMPLE_SOURCES CONFIGURE_DEPENDS
     "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.cpp")
 foreach(example_src ${EXAMPLE_SOURCES})
     get_filename_component(example_name "${example_src}" NAME_WE)
-    add_executable(${example_name} "${example_src}")
+    add_executable(${example_name} "${example_src}" "include/chromium_parser/discover.h" "src/discover.cpp")
     target_link_libraries(${example_name} PRIVATE chromium_parser)
 endforeach()
